@@ -1,0 +1,102 @@
+version: 2.1
+
+jobs:
+
+  build-test-docker:
+    docker:
+      - image: cimg/openjdk:21.0
+
+    steps:
+      - checkout
+
+      # -------------------------------
+      # 1. Run Unit Tests
+      # -------------------------------
+      - run:
+          name: Run tests
+          command: |
+            mvn clean test
+
+      # -------------------------------
+      # 2. Build Spring Boot JAR
+      # -------------------------------
+      - run:
+          name: Build Spring Boot application
+          command: |
+            mvn package -DskipTests
+
+      # -------------------------------
+      # 3. Enable Docker
+      # -------------------------------
+      - setup_remote_docker
+
+      # -------------------------------
+      # 4. Build Docker Image
+      # -------------------------------
+      - run:
+          name: Build Docker image
+          command: |
+            echo "Building Docker image..."
+            echo "Commit: ${CIRCLE_SHA1}"
+
+            docker build \
+              --progress=plain \
+              -t "${DOCKERHUB_USERNAME}/cicd-project:${CIRCLE_SHA1}" .
+
+      # -------------------------------
+      # 5. Login to Docker Hub
+      # -------------------------------
+      - run:
+          name: Login to Docker Hub
+          command: |
+            echo "${DOCKERHUB_PASSWORD}" | \
+              docker login \
+                --username "${DOCKERHUB_USERNAME}" \
+                --password-stdin
+
+      # -------------------------------
+      # 6. Push Docker Image
+      # -------------------------------
+      - run:
+          name: Push Docker image
+          command: |
+            docker push \
+              "${DOCKERHUB_USERNAME}/cicd-project:${CIRCLE_SHA1}"
+
+      # -------------------------------
+      # 7. Update GitOps Repository
+      # -------------------------------
+      - run:
+          name: Update GitOps repository
+          command: |
+            git clone \
+              https://Ellin2024:${GITOPS_TOKEN}@github.com/Ellin2024/sample-spring-gitops.git \
+              gitops
+
+            cd gitops
+
+            echo "Updating Kubernetes image..."
+
+            sed -i \
+              "s|image:.*|image: ${DOCKERHUB_USERNAME}/cicd-project:${CIRCLE_SHA1}|" \
+              deployment.yaml
+
+            echo "Updated deployment.yaml:"
+            grep "image:" deployment.yaml
+
+            git config user.name "CircleCI"
+            git config user.email "circleci@users.noreply.github.com"
+
+            git add deployment.yaml
+
+            git commit \
+              -m "Update cicd-project image to ${CIRCLE_SHA1}" || true
+
+            git push origin main
+
+
+workflows:
+
+  build:
+    jobs:
+      - build-test-docker

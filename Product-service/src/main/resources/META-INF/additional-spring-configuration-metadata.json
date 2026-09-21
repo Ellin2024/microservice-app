@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "category.base.url",
+  "type": "java.lang.String",
+  "description": "A description for 'category.base.url'"
+}]}

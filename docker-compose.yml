@@ -1,0 +1,112 @@
+services:
+
+  # ---------------- CONFIG SERVER ----------------
+  config-server:
+    build: ./Config-server
+    image: config-server:1.0
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    networks:
+      - micro-net
+
+  # ---------------- EUREKA SERVER ----------------
+  eureka-server:
+    build: ./Eureka
+    image: eureka-server:1.0
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    # depends_on:
+    #   - config-server
+    # environment:
+    #   SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+    networks:
+      - micro-net
+
+  # ---------------- API GATEWAY ----------------
+  api-gateway:
+    build: ./APIGateway
+    image: api-gateway:1.0
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - config-server
+      - eureka-server
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+    networks:
+      - micro-net
+
+  # ---------------- PRODUCT MYSQL ----------------
+  product-mysql:
+    image: mysql:8
+    container_name: product-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mysqlroot
+      MYSQL_DATABASE: productDB
+    ports:
+      - "3307:3306"
+    networks:
+      - micro-net
+
+  # ---------------- CATEGORY MYSQL ----------------
+  category-mysql:
+    image: mysql:8
+    container_name: category-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: mysqlroot
+      MYSQL_DATABASE: categoryDB
+    ports:
+      - "3308:3306"
+    networks:
+      - micro-net
+
+  # ---------------- PRODUCT SERVICE ----------------
+  product-service:
+    build: ./Product-service
+    image: product-service:1.0
+    container_name: product-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - config-server
+      - eureka-server
+      - product-mysql
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      SPRING_DATASOURCE_URL: jdbc:mysql://product-mysql:3306/productDB
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: mysqlroot
+    networks:
+      - micro-net
+
+  # ---------------- CATEGORY SERVICE ----------------
+  category-service:
+    build: ./Category-service
+    image: category-service:1.0
+    container_name: category-service
+    ports:
+      - "8081:8083"
+    depends_on:
+      - config-server
+      - eureka-server
+      - category-mysql
+    environment:
+      SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+      SPRING_DATASOURCE_URL: jdbc:mysql://category-mysql:3306/categoryDB
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: mysqlroot
+    networks:
+      - micro-net
+
+# networks:
+#   microservice-network:
+#     external: true
+
+networks:
+  micro-net:
+    driver: bridge
