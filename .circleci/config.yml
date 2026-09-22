@@ -76,7 +76,7 @@ jobs:
           name: Build Docker Images
           command: |
             docker build \
-              -t $DOCKERHUB_USERNAME/api-gateway:$CIRCLE_SHA1 \
+              -t $DOCKERHUB_USERNAME/APIGateway:$CIRCLE_SHA1 \
               api-gateway
 
             docker build \
@@ -102,7 +102,7 @@ jobs:
           name: Push Docker Images
           command: |
             docker push \
-              $DOCKERHUB_USERNAME/api-gateway:$CIRCLE_SHA1
+              $DOCKERHUB_USERNAME/APIGateway:$CIRCLE_SHA1
 
             docker push \
               $DOCKERHUB_USERNAME/category-service:$CIRCLE_SHA1
