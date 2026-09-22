@@ -15,7 +15,7 @@ jobs:
       - run:
           name: Build API Gateway
           command: |
-            cd api-gateway
+            cd APIGateway
             mvn clean package -DskipTests
 
       # =========================
@@ -24,7 +24,7 @@ jobs:
       - run:
           name: Build Category Service
           command: |
-            cd category-service
+            cd Category-service
             mvn clean package -DskipTests
 
       # =========================
@@ -33,7 +33,7 @@ jobs:
       - run:
           name: Build Config Server
           command: |
-            cd config-server
+            cd Config-server
             mvn clean package -DskipTests
 
       # =========================
@@ -42,7 +42,7 @@ jobs:
       - run:
           name: Build Eureka Server
           command: |
-            cd eureka-server
+            cd Eureka
             mvn clean package -DskipTests
 
       # =========================
@@ -51,7 +51,7 @@ jobs:
       - run:
           name: Build Product Service
           command: |
-            cd product-service
+            cd Product-service
             mvn clean package -DskipTests
 
       # =========================
