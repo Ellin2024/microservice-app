@@ -77,23 +77,23 @@ jobs:
           command: |
             docker build \
               -t $DOCKERHUB_USERNAME/api-gateway:$CIRCLE_SHA1 \
-              api-gateway
+              APIGateway
 
             docker build \
               -t $DOCKERHUB_USERNAME/category-service:$CIRCLE_SHA1 \
-              category-service
+              Category-service
 
             docker build \
               -t $DOCKERHUB_USERNAME/config-server:$CIRCLE_SHA1 \
-              config-server
+              Config-server
 
             docker build \
               -t $DOCKERHUB_USERNAME/eureka-server:$CIRCLE_SHA1 \
-              eureka-server
+              Eureka
 
             docker build \
               -t $DOCKERHUB_USERNAME/product-service:$CIRCLE_SHA1 \
-              product-service
+              Product-service
 
       # =========================
       # Push Docker Images
